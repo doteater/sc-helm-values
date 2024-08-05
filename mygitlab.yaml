@@ -71,6 +71,18 @@ spec:
             ##  file:
             # host: postgresql-ci.hostedsomewhere.else
             # ...          
+        smtp:
+          enabled: true
+          address: 'smtp.zoho.com'
+          port: 587
+          tls: true 
+          authentication: 'plain'
+          enable_starttls_auto: true
+          user_name: 'cory.johnson@sentracam.com'
+          password:
+            secret: 'smtp-password'
+            key: 'password'
+          domain: 'smtp.zoho.com'
       certmanager-issuer:
         email: cory.johnson@sentracam.com # use your real email address here
       nginx-ingress:
@@ -83,15 +95,3 @@ spec:
         display_name: 'GitLab'
         from: 'cory.johnson@sentracam.com'
         reply_to: 'no-reply@sentracam.com'
-      smtp:
-        enabled: true
-        address: 'smtp.zoho.com'
-        port: 587
-        tls: true 
-        authentication: 'plain'
-        enable_starttls_auto: true
-        user_name: 'cory.johnson@sentracam.com'
-        password:
-          secret: 'smtp-password'
-          key: 'password'
-        domain: 'smtp.zoho.com'
