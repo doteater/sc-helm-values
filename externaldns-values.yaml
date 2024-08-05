@@ -1,0 +1,23 @@
+provider: 
+  name: cloudflare
+env:
+  - name: CF_API_TOKEN
+    valueFrom:
+      secretKeyRef:
+        name: cloudflare-api-key
+        key: apiKey
+domainFilters: 
+  - sentracam.net
+excludeDomains: 
+  - cloud.sentracam.net
+  - ftp.sentracam.net
+  - orville.la01.vultr.sentracam.net
+  - autodiscover.sentracam.net
+  - www.sentracam.net 
+  - sm1.sentracam.net 
+  - sm2.sentracam.net 
+  - sm3.sentracam.net
+  - sites.sentracam.net
+  - rancher01.vm.dc01.phx.sentracam.net
+  - rancher02.vm.dc01.phx.sentracam.net
+  - rancher03.vm.dc01.phx.sentracam.net

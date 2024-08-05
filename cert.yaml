@@ -1,0 +1,14 @@
+---
+apiVersion: cert-manager.io/v1
+kind: Certificate
+metadata:
+  name: rancher-ingress-cert
+  namespace: cattle-system
+spec:
+  dnsNames:
+    - "rancher.sentracam.net"
+  secretName: rancher-ingress-tls
+  issuerRef:
+    name: letsencrypt-cluster-issuer
+    kind: ClusterIssuer
+---

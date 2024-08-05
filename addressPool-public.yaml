@@ -1,0 +1,8 @@
+apiVersion: metallb.io/v1beta1
+kind: IPAddressPool
+metadata:
+  name: mymetallbpool-public
+  namespace: metallb-system
+spec:
+  addresses:
+  - 69.24.142.20-69.24.142.30
