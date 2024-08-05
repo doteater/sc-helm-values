@@ -34,13 +34,13 @@ manager:
   # 'debug' controls development mode in the logger.
   # ref: https://sdk.operatorframework.io/docs/building-operators/golang/references/logging
   debug:
-    enabled: false ###default false
+    enabled: true ###default false
   log:
     # 'level' can be one of:
     #   'debug', 'info', 'error',
     #   or any integer value > 0 which corresponds to custom debug levels of increasing verbosity.
     # ref: https://sdk.operatorframework.io/docs/building-operators/golang/references/logging
-    level: info ### default info
+    level: debug ### default info
   kubeRbacProxy:
     image:
       registry: gcr.io
