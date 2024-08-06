@@ -73,16 +73,16 @@ spec:
             # ...          
         smtp:
           enabled: true
-          address: 'smtp.zoho.com'
+          address: 'smtp.zeptomail.com'
           port: 465
           tls: true 
           authentication: 'plain'
           enable_starttls_auto: true
-          user_name: 'cory.johnson@sentracam.com'
+          user_name: 'emailapikey'
           password:
             secret: 'smtp-password'
             key: 'password'
-          domain: 'smtp.zoho.com'
+          #domain: 'smtp.zeptomail.com'
       certmanager-issuer:
         email: cory.johnson@sentracam.com # use your real email address here
       nginx-ingress:
@@ -93,5 +93,5 @@ spec:
         install: false
       email:
         display_name: 'GitLab'
-        from: 'cory.johnson@sentracam.com'
-        reply_to: 'no-reply@sentracam.com'
+        from: 'noreply@sentracam.com'
+        reply_to: 'noreply@sentracam.com'
