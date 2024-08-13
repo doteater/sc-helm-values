@@ -11,6 +11,7 @@ domainFilters:
 excludeDomains: 
   - cloud.sentracam.net
   - ftp.sentracam.net
+  - kms.sentracam.net
   - orville.la01.vultr.sentracam.net
   - autodiscover.sentracam.net
   - www.sentracam.net 
