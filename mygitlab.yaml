@@ -95,4 +95,3 @@ spec:
         install: false
       postgresql:
         install: false
-        
