@@ -276,7 +276,7 @@ selinuxMount: true
 
 storageClass:
   # Specifies whether the Storage class should be created
-  create: false
+  create: true
   name: csi-cephfs-sc
   # Annotations for the storage class
   # Example:
@@ -288,10 +288,10 @@ storageClass:
   # Should be unique across all Ceph clusters in use for provisioning,
   # cannot be greater than 36 bytes in length, and should remain immutable for
   # the lifetime of the StorageClass in use.
-  clusterID: <cluster-ID>
+  clusterID: 61eb1332-f62a-48eb-afb5-a369719e8734
   # (required) CephFS filesystem name into which the volume shall be created
   # eg: fsName: myfs
-  fsName: myfs
+  fsName: CephFS
   # (optional) Ceph pool into which volume data shall be stored
   # pool: <cephfs-data-pool>
   # For eg:
@@ -316,17 +316,18 @@ storageClass:
   # volumeNamePrefix: "foo-bar-"
   volumeNamePrefix: ""
   # The secrets have to contain user and/or Ceph admin credentials.
-  provisionerSecret: csi-cephfs-secret
+  provisionerSecret: ceph-admin
   # If the Namespaces are not specified, the secrets are assumed to
   # be in the Release namespace.
-  provisionerSecretNamespace: ""
-  controllerExpandSecret: csi-cephfs-secret
-  controllerExpandSecretNamespace: ""
-  nodeStageSecret: csi-cephfs-secret
-  nodeStageSecretNamespace: ""
-  reclaimPolicy: Delete
+  provisionerSecretNamespace: "default"
+  controllerExpandSecret: ceph-admin
+  controllerExpandSecretNamespace: "default"
+  nodeStageSecret: ceph-admin
+  nodeStageSecretNamespace: "default"
+  reclaimPolicy: Retain
   allowVolumeExpansion: true
-  mountOptions: []
+  mountOptions:
+    - discard
   # Mount Options
   # Example:
   # mountOptions:
