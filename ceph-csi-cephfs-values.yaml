@@ -327,7 +327,7 @@ storageClass:
   reclaimPolicy: Retain
   allowVolumeExpansion: true
   mountOptions:
-    - discard
+  #  - discard
   # Mount Options
   # Example:
   # mountOptions:
