@@ -2,11 +2,20 @@
 # This is a YAML-formatted file.
 # Declare variables to be passed into your templates.
 
+##externalDatabase:
+##  secretName: db-secret
+
 # Configure external database host
-# dbHost: ""
-# dbPort: 3306
-# dbRootUser: ""
-# dbRootPassword: ""
+##dbHost: "erpnext-mariadb.mariadb"
+dbHost: "erpnext-haproxy.pxc"
+dbPort: 3306
+dbRootUser: "root"
+dbRootPassword: "5[vAI4CsJwUB]0K9"
+##dbRootPassword: {{ (lookup "v1" "Secret" .Values.externalDatabase.secretName .Release.Namespace).data.dbRootPassword | b64dec }}
+#dbRootPassword: "u7aqWv5bgdSc92@~"
+#  secretKeyRef:
+#    name: erpnext-mysql
+#    key: mysql-password
 # dbRds: false
 
 image:
@@ -241,21 +250,21 @@ persistence:
 # Ingress
 ingress:
   # ingressName: ""
-  # className: ""
-  enabled: false
-  annotations: {}
-    # kubernetes.io/ingress.class: nginx
-    # kubernetes.io/tls-acme: "true"
-    # cert-manager.io/cluster-issuer: letsencrypt-prod
+  className: "nginx"
+  enabled: true
+  annotations:
+    kubernetes.io/ingress.class: nginx
+    kubernetes.io/tls-acme: "true"
+    cert-manager.io/cluster-issuer: letsencrypt-cluster-issuer
   hosts:
-  - host: erp.cluster.local
+  - host: erpdev.sentracam.net
     paths:
     - path: /
       pathType: ImplementationSpecific
-  tls: []
-  #  - secretName: auth-server-tls
-  #    hosts:
-  #      - auth-server.local
+  tls:
+    - secretName: erpdev-sentracam-net-tls
+      hosts:
+        - erpdev.sentracam.net
 
 jobs:
   volumePermissions:
@@ -279,9 +288,9 @@ jobs:
     args: []
 
   createSite:
-    enabled: false
+    enabled: true
     forceCreate: false
-    siteName: "erp.cluster.local"
+    siteName: "erpdev.sentracam.net"
     adminPassword: "changeit"
     installApps:
     - "erpnext"
@@ -384,12 +393,12 @@ redis-queue:
 
 mariadb:
   # https://github.com/bitnami/charts/tree/master/bitnami/mariadb
-  enabled: true
+  enabled: false
   auth:
-    rootPassword: "changeit"
+    rootPassword: "InfectStab21"
     username: "erpnext"
-    password: "changeit"
-    replicationPassword: "changeit"
+    password: "ValleyMidnight97"
+    replicationPassword: "SheepWarning33"
   primary:
     service:
       ports:
