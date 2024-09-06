@@ -3,15 +3,16 @@
 # Declare variables to be passed into your templates.
 
 # Configure external database host
-dbHost: "erpnext-mariadb.mariadb"
-dbPort: 3306
-dbRootUser: "root"
-dbRootPassword: "InfectStab21"
+###dbHost: "erpnext-mariadb.mariadb"
+###dbPort: 3306
+###dbRootUser: "root"
+###dbRootPassword: "InfectStab21"
 # dbRds: false
 
 image:
   repository: frappe/erpnext
-  tag: v15.33.5
+  #tag: v13.42.5
+  tag: v13.36.2
   pullPolicy: IfNotPresent
 
 nginx:
@@ -279,7 +280,7 @@ jobs:
     args: []
 
   createSite:
-    enabled: true
+    enabled: false
     forceCreate: false
     siteName: "erpdev.sentracam.net"
     adminPassword: "changeit"
@@ -356,8 +357,8 @@ securityContext:
 
 redis-cache:
   # https://github.com/bitnami/charts/tree/master/bitnami/redis
-  enabled: false
-  host: "redis://redis-ha-erpnext-haproxy.erpnext:6379"
+  enabled: true
+  ###host: "redis://redis-ha-erpnext.erpnext:6379"
   architecture: standalone
   auth:
     enabled: false
@@ -370,8 +371,8 @@ redis-cache:
 
 redis-queue:
   # https://github.com/bitnami/charts/tree/master/bitnami/redis
-  enabled: false
-  host: "redis://redis-ha-erpnext-haproxy.erpnext:6379"
+  enabled: true
+  ###host: "redis://redis-ha-erpnext.erpnext:6379"
   architecture: standalone
   auth:
     enabled: false
@@ -384,7 +385,7 @@ redis-queue:
 
 mariadb:
   # https://github.com/bitnami/charts/tree/master/bitnami/mariadb
-  enabled: false
+  enabled: true
   auth:
     rootPassword: "changeit"
     username: "erpnext"

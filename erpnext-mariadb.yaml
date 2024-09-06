@@ -21,7 +21,7 @@ spec:
   port: 3306
 
   storage:
-    size: 4Gi
+    size: 16Gi
 
   service:
     type: LoadBalancer
