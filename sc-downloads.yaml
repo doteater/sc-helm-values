@@ -1,0 +1,80 @@
+---
+apiVersion: cert-manager.io/v1
+kind: Certificate
+metadata:
+  name: downloads-sentracam-net
+  namespace: sc-downloads
+spec:
+  dnsNames:
+    - "downloads.sentracam.net"
+  secretName: downloads-sentracam-net-tls
+  issuerRef:
+    name: letsencrypt-cluster-issuer
+    kind: ClusterIssuer
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: sc-downloads
+  namespace: sc-downloads
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      workload.user.cattle.io/workloadselector: apps.deployment-sc-downloads-sc-downloads
+  template:
+    metadata:
+      labels:
+        workload.user.cattle.io/workloadselector: apps.deployment-sc-downloads-sc-downloads
+    spec:
+      containers:
+        - name: container-0
+          image: cjohnson282/sc-downloads:0.0.1
+          ports:
+            - containerPort: 80
+              hostPort: 45456
+              name: 80tcp80
+              protocol: TCP
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: sc-downloads
+  namespace: sc-downloads
+spec:
+  internalTrafficPolicy: Cluster
+  ipFamilies:
+    - IPv4
+  ipFamilyPolicy: SingleStack
+  ports:
+    - name: 80tcp80
+      port: 80
+      protocol: TCP
+      targetPort: 80
+  selector:
+    workload.user.cattle.io/workloadselector: apps.deployment-sc-downloads-sc-downloads
+  sessionAffinity: None
+  type: ClusterIP
+---
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: downloads.sentracam.net
+  namespace: sc-downloads
+spec:
+  ingressClassName: nginx
+  rules:
+    - host: downloads.sentracam.net
+      http:
+        paths:
+          - backend:
+              service:
+                name: sc-downloads
+                port:
+                  number: 80
+            path: /
+            pathType: Prefix
+  tls:
+    - hosts:
+        - downloads.sentracam.net
+      secretName: downloads-sentracam-net-tls
