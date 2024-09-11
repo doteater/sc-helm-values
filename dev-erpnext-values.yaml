@@ -230,7 +230,7 @@ socketio:
 persistence:
   worker:
     enabled: true
-    existingClaim: "frappe-bench-erpnext"
+    existingClaim: "dev-frappe-bench-erpnext"
     #size: 32Gi
     #storageClass: "csi-cephfs-sc"
   logs:
@@ -250,14 +250,14 @@ ingress:
     kubernetes.io/tls-acme: "true"
     cert-manager.io/cluster-issuer: letsencrypt-cluster-issuer
   hosts:
-  - host: erp.sentracam.net
+  - host: erpdev.sentracam.net
     paths:
     - path: /
       pathType: ImplementationSpecific
   tls:
-    - secretName: erp-sentracam-net-tls
+    - secretName: erpdev-sentracam-net-tls
       hosts:
-        - erp.sentracam.com
+        - erpdev.sentracam.net
 
 jobs:
   volumePermissions:
@@ -269,7 +269,7 @@ jobs:
     affinity: {}
 
   configure:
-    enabled: true
+    enabled: false
     fixVolume: true
     backoffLimit: 0
     resources: {}
@@ -281,9 +281,9 @@ jobs:
     args: []
 
   createSite:
-    enabled: true
+    enabled: false
     forceCreate: false
-    siteName: "erp.sentracam.com"
+    siteName: "erpdev.sentracam.net"
     adminPassword: "changeit"
     #installApps:
     #- "erpnext"

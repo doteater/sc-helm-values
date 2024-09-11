@@ -22,3 +22,4 @@ excludeDomains:
   - rancher01.vm.dc01.phx.sentracam.net
   - rancher02.vm.dc01.phx.sentracam.net
   - rancher03.vm.dc01.phx.sentracam.net
+  - sentracam.com
