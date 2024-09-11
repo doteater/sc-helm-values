@@ -250,12 +250,12 @@ ingress:
     kubernetes.io/tls-acme: "true"
     cert-manager.io/cluster-issuer: letsencrypt-cluster-issuer
   hosts:
-  - host: erp.sentracam.net
+  - host: erp.sentracam.com
     paths:
     - path: /
       pathType: ImplementationSpecific
   tls:
-    - secretName: erp-sentracam-net-tls
+    - secretName: erp-sentracam-com-tls
       hosts:
         - erp.sentracam.com
 
@@ -269,7 +269,7 @@ jobs:
     affinity: {}
 
   configure:
-    enabled: true
+    enabled: false
     fixVolume: true
     backoffLimit: 0
     resources: {}
@@ -281,7 +281,7 @@ jobs:
     args: []
 
   createSite:
-    enabled: true
+    enabled: false
     forceCreate: false
     siteName: "erp.sentracam.com"
     adminPassword: "changeit"
