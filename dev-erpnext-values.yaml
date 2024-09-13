@@ -3,11 +3,12 @@
 # Declare variables to be passed into your templates.
 
 # Configure external database host
-###dbHost: "erpnext-mariadb.mariadb"
-###dbPort: 3306
-###dbRootUser: "root"
-###dbRootPassword: "InfectStab21"
-# dbRds: false
+# (specify these on the CLI, only needed for create/drop site jobs)
+#dbHost: "erpnext-mariadb.mariadb"
+#dbPort: 3306
+#dbRootUser: "root"
+#dbRootPassword: ""
+#dbRds: false
 
 image:
   repository: cjohnson282/sc-frappe

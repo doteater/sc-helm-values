@@ -6,6 +6,13 @@ metadata:
 spec:
   #frappe only tested up to 10.8, looks like 10.6 is the latest maintained version
   image: docker-registry1.mariadb.com/library/mariadb:10.6
+
+  replicas: 3
+  galera:
+    enabled: true
+    config:
+      reuseStorageVolume: true
+
   rootPasswordSecretKeyRef:
     name: erpnext-mariadb-root
     key: password
@@ -22,12 +29,34 @@ spec:
 
   storage:
     size: 16Gi
+  #  storageClassName: standard
+  #  resizeInUseVolumes: true
+  #  waitForVolumeResize: true
+  #  volumeClaimTemplate:
+  #    accessModes:
+  #    - ReadWriteOnce
+  #    resources:
+  #      requests:
+  #        storage: 1Gi
+  #    storageClassName: standard
 
   service:
     type: LoadBalancer
     metadata:
       annotations:
       #  metallb.universe.tf/loadBalancerIPs: 172.18.0.20
+  
+  #primaryService:
+  #  type: LoadBalancer
+  #  metadata:
+  #    annotations:
+  #    #  metallb.universe.tf/loadBalancerIPs: 172.18.0.20
+#
+  #secondaryService:
+  #  type: LoadBalancer
+  #  metadata:
+  #    annotations:
+  #    #  metallb.universe.tf/loadBalancerIPs: 172.18.0.20
 
   myCnf: |
     [mariadb]

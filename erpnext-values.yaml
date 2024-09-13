@@ -3,11 +3,12 @@
 # Declare variables to be passed into your templates.
 
 # Configure external database host
-###dbHost: "erpnext-mariadb.mariadb"
-###dbPort: 3306
-###dbRootUser: "root"
-###dbRootPassword: "InfectStab21"
-# dbRds: false
+# (specify these on the CLI, only needed for create/drop site jobs)
+#dbHost: "erpnext-mariadb.mariadb"
+#dbPort: 3306
+#dbRootUser: "root"
+#dbRootPassword: ""
+#dbRds: false
 
 image:
   repository: cjohnson282/sc-frappe
@@ -269,7 +270,7 @@ jobs:
     affinity: {}
 
   configure:
-    enabled: false
+    enabled: true
     fixVolume: true
     backoffLimit: 0
     resources: {}
@@ -281,8 +282,8 @@ jobs:
     args: []
 
   createSite:
-    enabled: false
-    forceCreate: false
+    enabled: true
+    forceCreate: true
     siteName: "erp.sentracam.com"
     adminPassword: "changeit"
     #installApps:
@@ -370,7 +371,7 @@ redis-cache:
     containerPorts:
       redis: 6379
     persistence:
-      enabled: false
+      enabled: true
 
 redis-queue:
   # https://github.com/bitnami/charts/tree/master/bitnami/redis
@@ -384,25 +385,25 @@ redis-queue:
     containerPorts:
       redis: 6379
     persistence:
-      enabled: false
+      enabled: true
 
 mariadb:
   # https://github.com/bitnami/charts/tree/master/bitnami/mariadb
-  enabled: true
-  auth:
-    rootPassword: "changeit"
-    username: "erpnext"
-    password: "changeit"
-    replicationPassword: "changeit"
-  primary:
-    service:
-      ports:
-        mysql: 3306
-    extraFlags: >-
-      --skip-character-set-client-handshake
-      --skip-innodb-read-only-compressed
-      --character-set-server=utf8mb4
-      --collation-server=utf8mb4_unicode_ci
+  enabled: false
+  #auth:
+  #  rootPassword: "changeit"
+  #  username: "erpnext"
+  #  password: "changeit"
+  #  replicationPassword: "changeit"
+  #primary:
+  #  service:
+  #    ports:
+  #      mysql: 3306
+  #  extraFlags: >-
+  #    --skip-character-set-client-handshake
+  #    --skip-innodb-read-only-compressed
+  #    --character-set-server=utf8mb4
+  #    --collation-server=utf8mb4_unicode_ci
 
 postgresql:
   # https://github.com/bitnami/charts/tree/master/bitnami/postgresql
