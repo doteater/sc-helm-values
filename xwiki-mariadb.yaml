@@ -1,11 +1,11 @@
 apiVersion: k8s.mariadb.com/v1alpha1
 kind: MariaDB
 metadata:
-  name: erpnext-mariadb
+  name: xwiki-mariadb
   namespace: mariadb
 spec:
-  #frappe only tested up to 10.8, looks like 10.6 is the latest maintained version
   image: docker-registry1.mariadb.com/library/mariadb:10.6
+  #image: docker-registry1.mariadb.com/library/mariadb:lts
 
   replicas: 3
   galera:
@@ -14,17 +14,17 @@ spec:
       reuseStorageVolume: true
 
   rootPasswordSecretKeyRef:
-    name: erpnext-mariadb-root
+    name: xwiki-mariadb-root
     key: password
     generate: true
 
-  username: erpnext
+  username: xwiki
   passwordSecretKeyRef:
-    name: erpnext-mariadb-password
+    name: xwiki-mariadb-password
     key: password
     generate: true
-
-  #database: erpnext
+  
+  #database: xwiki
 
   port: 3306
 
@@ -67,8 +67,6 @@ spec:
     innodb_autoinc_lock_mode=2
     innodb_buffer_pool_size=1024M
     max_allowed_packet=256M
-    slow_query_log
-    long_query_time = 1
 
   metrics:
     enabled: true

@@ -1,0 +1,8 @@
+controller:
+  resources:
+    requests:
+      memory: "256Mi"  # Example value, adjust as needed
+    #  cpu: "200m"
+    #limits:
+    #  memory: "512Mi"  # Example value, adjust as needed
+    #  cpu: "500m"

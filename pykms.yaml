@@ -1,0 +1,37 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: pykms
+  namespace: default # Change this to your desired namespace
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: pykms
+  template:
+    metadata:
+      labels:
+        app: pykms
+    spec:
+      containers:
+        - name: pykms
+          image: ghcr.io/py-kms-organization/py-kms:latest
+          ports:
+            - containerPort: 1688
+          args:
+            - "0.0.0.0" # IP Address to bind
+            - "1688"    # Port
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: pykms
+  namespace: default # Change this to your desired namespace
+spec:
+  type: ClusterIP # Change to LoadBalancer or NodePort if needed for external access
+  ports:
+    - port: 1688
+      targetPort: 1688
+      protocol: TCP
+  selector:
+    app: pykms

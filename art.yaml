@@ -1,0 +1,82 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  annotations: {}
+  name: art
+  namespace: art
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      workload.user.cattle.io/workloadselector: apps.deployment-art-art
+  #strategy:
+  #  rollingUpdate:
+  #    maxSurge: 25%
+  #    maxUnavailable: 25%
+  #  type: RollingUpdate
+  template:
+    metadata:
+    #  annotations:
+    #    cattle.io/timestamp: '2024-09-20T20:14:04Z'
+    #  creationTimestamp: null
+      labels:
+        workload.user.cattle.io/workloadselector: apps.deployment-art-art
+    # namespace: art
+    spec:
+      containers:
+        - image: cjohnson282/sc-art:v0.0.1
+          ports:
+            - containerPort: 8080
+              protocol: TCP
+          name: container-0
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: art
+  namespace: art
+spec:
+  ports:
+    - name: 8080tcp
+      port: 8080
+      protocol: TCP
+      targetPort: 8080
+  selector:
+    workload.user.cattle.io/workloadselector: apps.deployment-art-art
+  type: ClusterIP
+---
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: art
+  namespace: art
+spec:
+  ingressClassName: nginx
+  rules:
+    - host: art.sentracam.net
+      http:
+        paths:
+          - backend:
+              service:
+                name: art
+                port:
+                  number: 8080
+            path: /
+            pathType: Prefix
+  tls:
+    - hosts:
+        - art.sentracam.net
+      secretName: art-sentracam-net-tls
+---
+apiVersion: cert-manager.io/v1
+kind: Certificate
+metadata:
+  name: art-sentracam-net
+  namespace: art
+spec:
+  dnsNames:
+    - "art.sentracam.net"
+  secretName: art-sentracam-net-tls
+  issuerRef:
+    name: letsencrypt-cluster-issuer
+    kind: ClusterIssuer

@@ -349,34 +349,34 @@ nginx:
   #    value: ENV_VALUE
 
 internalDatabase:
-  enabled: true
+  enabled: false
   name: nextcloud
 
 ##
 ## External database configuration
 ##
 externalDatabase:
-  enabled: false
+  enabled: true
 
   ## Supported database engines: mysql or postgresql
   type: mysql
 
   ## Database host
-  host:
+  host: nextcloud-haproxy.pxc
 
   ## Database user
-  user: nextcloud
+  user: root
 
   ## Database password
-  password: ""
+  #password: ""
 
   ## Database name
   database: nextcloud
 
   ## Use a existing secret
   existingSecret:
-    enabled: false
-    # secretName: nameofsecret
+    enabled: true
+    secretName: nextcloud-db
     usernameKey: db-username
     passwordKey: db-password
     # hostKey: db-hostname-or-ip
@@ -501,7 +501,7 @@ service:
   type: ClusterIP
   port: 8080
   loadBalancerIP: ""
-  nodePort: nil
+  #nodePort: nil
   annotations: {}
     ## Insert your annotations such as below
     # test/test: pumuckel
@@ -511,7 +511,7 @@ service:
 ##
 persistence:
   # Nextcloud Data (/var/www/html)
-  enabled: false
+  enabled: true
   annotations: {}
   ## nextcloud data Persistent Volume Storage Class
   ## If defined, storageClassName: <storageClass>
@@ -525,10 +525,10 @@ persistence:
   ## A manually managed Persistent Volume and Claim
   ## Requires persistence.enabled: true
   ## If defined, PVC must be created manually before volume will be bound
-  # existingClaim:
+  existingClaim: "nextcloud-data"
 
-  accessMode: ReadWriteOnce
-  size: 8Gi
+  ###accessMode: ReadWriteOnce
+  ###size: 8Gi
 
   ## Use an additional pvc for the data directory rather than a subpath of the default PVC
   ## Useful to store data on a different storageClass (e.g. on slower disks)

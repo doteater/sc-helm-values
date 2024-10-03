@@ -12,13 +12,13 @@
 
 image:
   repository: cjohnson282/sc-frappe
-  tag: v15.34.2
+  tag: v1.0.2
+  #tag: v15.34.2
   pullPolicy: IfNotPresent
 
 
-
 nginx:
-  replicaCount: 1
+  replicaCount: 3
   autoscaling:
     enabled: false
     minReplicas: 1
@@ -55,7 +55,7 @@ nginx:
 
 worker:
   gunicorn:
-    replicaCount: 1
+    replicaCount: 3
     autoscaling:
       enabled: false
       minReplicas: 1
@@ -85,7 +85,7 @@ worker:
     sidecars: []
 
   default:
-    replicaCount: 1
+    replicaCount: 3
     autoscaling:
       enabled: false
       minReplicas: 1
@@ -107,7 +107,7 @@ worker:
     sidecars: []
 
   short:
-    replicaCount: 1
+    replicaCount: 3
     autoscaling:
       enabled: false
       minReplicas: 1
@@ -129,7 +129,7 @@ worker:
     sidecars: []
 
   long:
-    replicaCount: 1
+    replicaCount: 3
     autoscaling:
       enabled: false
       minReplicas: 1
@@ -200,7 +200,7 @@ worker:
     periodSeconds: 5
 
 socketio:
-  replicaCount: 1
+  replicaCount: 3
   autoscaling:
     enabled: false
     minReplicas: 1
@@ -250,6 +250,8 @@ ingress:
     kubernetes.io/ingress.class: nginx
     kubernetes.io/tls-acme: "true"
     cert-manager.io/cluster-issuer: letsencrypt-cluster-issuer
+    nginx.ingress.kubernetes.io/proxy-body-size: "50M"
+    nginx.org/client-max-body-size: "50M"
   hosts:
   - host: erp.sentracam.com
     paths:
@@ -259,6 +261,7 @@ ingress:
     - secretName: erp-sentracam-com-tls
       hosts:
         - erp.sentracam.com
+        - erp.corp.sentracam.com
 
 jobs:
   volumePermissions:
@@ -270,7 +273,7 @@ jobs:
     affinity: {}
 
   configure:
-    enabled: true
+    enabled: false
     fixVolume: true
     backoffLimit: 0
     resources: {}
@@ -282,8 +285,8 @@ jobs:
     args: []
 
   createSite:
-    enabled: true
-    forceCreate: true
+    enabled: false
+    forceCreate: false
     siteName: "erp.sentracam.com"
     adminPassword: "changeit"
     #installApps:
