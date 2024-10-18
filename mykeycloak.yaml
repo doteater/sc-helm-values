@@ -1,0 +1,58 @@
+apiVersion: k8s.keycloak.org/v2alpha1
+kind: Keycloak
+metadata:
+  name: keycloak
+  namespace: keycloak
+spec:
+  instances: 1
+  db:
+    vendor: postgres
+    host: keycloak-pgbouncer.postgres-operator
+    usernameSecret:
+      name: keycloak-db-secret
+      key: username
+    passwordSecret:
+      name: keycloak-db-secret
+      key: password
+  http:
+    tlsSecret: keycloak-tls-secret
+  hostname:
+    hostname: keycloak.sentracam.net
+  proxy:
+    headers: xforwarded # double check your reverse proxy sets and overwrites the X-Forwarded-* headers
+  ingress:
+    enabled: true
+    className: nginx
+    #annotations:
+      #nginx.ingress.kubernetes.io/rewrite-target: /
+      #nginx.ingress.kubernetes.io/ssl-passthrough: "true"  # Enable SSL passthrough if Keycloak is handling TLS
+     # nginx.ingress.kubernetes.io/backend-protocol: "HTTPS"  # If backend is using HTTPS
+    #pathType: Prefix  # Or ImplementationSpecific depending on desired behavior
+---
+#apiVersion: networking.k8s.io/v1
+#kind: Ingress
+#metadata:
+#  name: keycloak.sentracam.net
+#  namespace: keycloak
+#spec:
+#  ingressClassName: nginx-20
+#  defaultBackend:
+#    service:
+#      name: keycloak-service
+#      port:
+#        name: https
+#  rules:
+#    - host: keycloak.sentracam.net
+#      http:
+#        paths:
+#          - backend:
+#              service:
+#                name: keycloak-service
+#                port:
+#                  name: https
+#            path: /
+#            pathType: ImplementationSpecific
+#  tls:
+#    - hosts:
+#        - keycloak.sentracam.net
+#      secretName: keycloak-tls-secret

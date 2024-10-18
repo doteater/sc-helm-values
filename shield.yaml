@@ -1,67 +1,60 @@
-apiVersion: v1
-kind: PersistentVolumeClaim
+---
+apiVersion: cert-manager.io/v1
+kind: Certificate
 metadata:
-  name: shield-pvc
+  name: shield-sentracam-com
   namespace: shield
 spec:
-  accessModes:
-    - ReadWriteMany
-  resources:
-    requests:
-      storage: 10Gi
-  storageClassName: csi-cephfs-sc
+  dnsNames:
+    - "shield.sentracam.com"
+  secretName: shield-sentracam-com-tls
+  issuerRef:
+    name: letsencrypt-cluster-issuer
+    kind: ClusterIssuer
 ---
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: shield
+  name: shield-nginx
   namespace: shield
 spec:
   replicas: 1
   selector:
     matchLabels:
-      app: shield
+      app: shield-nginx
   template:
     metadata:
       labels:
-        app: shield
+        app: shield-nginx
     spec:
       containers:
-      - name: shield
+      - name: nginx
         image: nginx:latest
         ports:
         - containerPort: 80
         volumeMounts:
         - name: static-files
-          mountPath: /usr/share/nginx/html  # This is the default path NGINX serves files from
+          mountPath: /usr/share/nginx/html  # Default path for NGINX to serve files from
           subPath: MySentraCam/build/web
-        - name: static-files
-          mountPath: /usr/share/nginx/html/images
-          subPath: images
         - name: shield-config
           mountPath: /etc/nginx/conf.d
       volumes:
       - name: static-files
         persistentVolumeClaim:
-          claimName: shield-pvc
+          claimName: shield-pvc  # Reference the PVC here
       - name: shield-config
         configMap:
           name: shield-config
-      # Add hostAliases to inject /etc/hosts entry 
-      hostAliases:
-      - ip: "10.9.12.199"  
-        hostnames:
-        - "erp.corp.sentracam.com"
 ---
 apiVersion: v1
 kind: Service
 metadata:
-  name: shield-service
+  name: shield-nginx-service
   namespace: shield
 spec:
-  type: LoadBalancer
+  type: ClusterIP  # Can also be LoadBalancer or NodePort if needed
   selector:
-    app: shield
+    app: shield-nginx
   ports:
     - protocol: TCP
       port: 80
@@ -70,86 +63,105 @@ spec:
 apiVersion: networking.k8s.io/v1
 kind: Ingress
 metadata:
-  name: shield-ingress
+  name: shield-nginx-ingress
   namespace: shield
   annotations:
-    nginx.ingress.kubernetes.io/rewrite-target: /$1
-    nginx.ingress.kubernetes.io/configuration-snippet: |
-      proxy_set_header Host erp.sentracam.com;
-      proxy_ssl_server_name on;
-spec:
-  ingressClassName: nginx
-  tls:
-  - hosts:
-      - shield.sentracam.net
-    secretName: shield-sentracam-net-tls
-  rules:
-  - host: shield.sentracam.net
-    http:
-      paths:
-      - path: /api/(.*)
-        pathType: Prefix
-        backend:
-          service:
-            name: dummy-service  # Dummy service to satisfy Ingress
-            port:
-              number: 80
-      - path: /files/(.*)
-        pathType: Prefix
-        backend:
-          service:
-            name: dummy-service  # Dummy service to satisfy Ingress
-            port:
-              number: 80
-      - path: /private/files/(.*)
-        pathType: Prefix
-        backend:
-          service:
-            name: dummy-service  # Dummy service to satisfy Ingress
-            port:
-              number: 80
-      - path: /art/(.*)
-        pathType: Prefix
-        backend:
-          service:
-            name: dummy-service  # Dummy service to satisfy Ingress
-            port:
-              number: 80
-apiVersion: networking.k8s.io/v1
-kind: Ingress
-metadata:
-  name: shield-ingress
-  namespace: shield
+    #nginx.ingress.kubernetes.io/rewrite-target: /
 spec:
   ingressClassName: nginx
   rules:
-  - host: shield.sentracam.net  # Your desired domain
+  - host: shield.sentracam.com  # Replace with your desired domain
     http:
       paths:
       - path: /
         pathType: Prefix
         backend:
           service:
-            name: shield-service
+            name: shield-nginx-service
             port:
               number: 80
   tls:
   - hosts:
-      - shield.sentracam.net
-    secretName: shield-sentracam-net-tls
+      - shield.sentracam.com
+    secretName: shield-sentracam-com-tls
 ---
-apiVersion: cert-manager.io/v1
-kind: Certificate
+apiVersion: v1
+kind: ConfigMap
 metadata:
-  name: shield-sentracam-net
+  name: shield-config
   namespace: shield
-spec:
-  dnsNames:
-    - "shield.sentracam.net"
-  secretName: shield-sentracam-net-tls
-  issuerRef:
-    name: letsencrypt-cluster-issuer
-    kind: ClusterIssuer
+data:
+  default.conf: |
+    server {
+        listen 80; 
+        server_name shield.sentracam.com; 
+        root /usr/share/nginx/html/;
+        index index.html index.htm; 
+        client_max_body_size 150M;
+        large_client_header_buffers 4 512k;
+        client_header_buffer_size 512k;
+        access_log /var/log/nginx/shield.access.log;
+        error_log /var/log/nginx/shield.error.log;
+
+        location / { 
+            try_files $uri $uri/ /index.html; 
+        } 
+
+        location /api/ {
+            #proxy_set_header Host erp.sentracam.com;
+            #proxy_pass https://erp.sentracam.com/api/;
+            #proxy_ssl_server_name on;
+            proxy_pass http://frappe-bench-erpnext.erpnext:8080/api/;
+            proxy_set_header Host erp.sentracam.com;
+            proxy_set_header X-Real-IP $remote_addr;
+            proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+        }
+
+        location /files/ {
+        #    #proxy_set_header Host erp.sentracam.com;
+        #    #proxy_pass https://erp.sentracam.com/files/;
+        #    #proxy_ssl_server_name on;
+            proxy_pass http://frappe-bench-erpnext.erpnext:8080/files/;
+            proxy_set_header Host erp.sentracam.com;
+            proxy_set_header X-Real-IP $remote_addr;
+            proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+        }
+
+        location /private/files/ {
+        #    #proxy_set_header Host erp.sentracam.com;
+        #    #proxy_pass https://erp.sentracam.com/private/files/;
+        #    #proxy_ssl_server_name on;
+            proxy_pass http://frappe-bench-erpnext.erpnext:8080/private/files/;
+            proxy_set_header Host erp.sentracam.com;
+            proxy_set_header X-Real-IP $remote_addr;
+            proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+        }
+
+        location /art/ {
+            proxy_hide_header 'Access-Control-Allow-Origin';
+            if ($request_method = 'OPTIONS') {
+                add_header 'Access-Control-Allow-Origin' '*' ;
+                add_header 'Access-Control-Allow-Methods' 'GET, POST, OPTIONS' ;
+                add_header "Access-Control-Allow-Headers" "Authorization, Origin, X-Requested-With, Content-Type, Accept";
+                add_header 'Access-Control-Allow-Headers' 'DNT,User-Agent,X-Requested-With,If-Modified-Since,Cache-Control,Content-Type,Range';
+                add_header 'Access-Control-Max-Age' 1728000;
+                return 200;
+            }
+            if ($request_method = 'POST') {
+                add_header 'Access-Control-Allow-Origin' '*' always;
+                add_header 'Access-Control-Allow-Methods' 'GET, POST, OPTIONS' always;
+                add_header 'Access-Control-Allow-Headers' 'DNT,User-Agent,X-Requested-With,If-Modified-Since,Cache-Control,Content-Type,Range' always;
+                add_header 'Access-Control-Expose-Headers' 'Content-Length,Content-Range';
+            }
+            if ($request_method = 'GET') {
+                add_header 'Access-Control-Allow-Origin' '*' always;
+                add_header 'Access-Control-Allow-Methods' 'GET, POST, OPTIONS' always;
+                add_header 'Access-Control-Allow-Headers' 'DNT,User-Agent,X-Requested-With,If-Modified-Since,Cache-Control,Content-Type,Range' always;
+                add_header 'Access-Control-Expose-Headers' 'Content-Length,Content-Range';
+            }
+            proxy_pass https://art.sentracam.com:8080/art/;
+        }
+    }
 ---
 apiVersion: apps/v1
 kind: Deployment
@@ -195,86 +207,3 @@ spec:
     app: sftp
   type: LoadBalancer
   loadBalancerIP: 69.24.142.21
----
-apiVersion: v1
-kind: ConfigMap
-metadata:
-  name: shield-config
-  namespace: shield
-data:
-  default.conf: |
-    server {
-        listen 80;
-        server_name shield.sentracam.net;
-        index index.html index.htm;
-        root /usr/share/nginx/html;
-        client_max_body_size 150M;
-        large_client_header_buffers 4 512k;
-        client_header_buffer_size 512k;
-
-        location / {
-          try_files $uri $uri/ /index.html;
-        }
-
-        location /api/ {
-          proxy_set_header Host erp.sentracam.com;
-          proxy_pass https://erp.sentracam.com/api/;
-          proxy_ssl_server_name on;
-        }
-        location /files/ {
-          proxy_set_header Host erp.sentracam.com;
-          proxy_pass https://erp.sentracam.com/files/;
-          proxy_ssl_server_name on;
-        }
-        location /private/files/ {
-          proxy_set_header Host erp.sentracam.com;
-          proxy_pass https://erp.sentracam.com/private/files/;
-          proxy_ssl_server_name on;
-        }
-        location /art/ {
-          proxy_hide_header 'Access-Control-Allow-Origin';
-          if ($request_method = 'OPTIONS') {
-            add_header 'Access-Control-Allow-Origin' '*' ;
-            add_header 'Access-Control-Allow-Methods' 'GET, POST, OPTIONS' ;
-            add_header "Access-Control-Allow-Headers" "Authorization, Origin, X-Requested-With, Content-Type, Accept";
-            add_header 'Access-Control-Allow-Headers' 'DNT,User-Agent,X-Requested-With,If-Modified-Since,Cache-Control,Content-Type,Range';
-            add_header 'Access-Control-Max-Age' 1728000;
-            return 200;
-          }
-          if ($request_method = 'POST') {
-            add_header 'Access-Control-Allow-Origin' '*' always;
-            add_header 'Access-Control-Allow-Methods' 'GET, POST, OPTIONS' always;
-            add_header 'Access-Control-Allow-Headers' 'DNT,User-Agent,X-Requested-With,If-Modified-Since,Cache-Control,Content-Type,Range' always;
-            add_header 'Access-Control-Expose-Headers' 'Content-Length,Content-Range';
-          }
-          if ($request_method = 'GET') {
-            add_header 'Access-Control-Allow-Origin' '*' always;
-            add_header 'Access-Control-Allow-Methods' 'GET, POST, OPTIONS' always;
-            add_header 'Access-Control-Allow-Headers' 'DNT,User-Agent,X-Requested-With,If-Modified-Since,Cache-Control,Content-Type,Range' always;
-            add_header 'Access-Control-Expose-Headers' 'Content-Length,Content-Range';
-          }
-          proxy_pass http://art.corp.sentracam.com:8080/art/;
-       }
-
-    }
-apiVersion: v1
-kind: ConfigMap
-metadata:
-  name: shield-config
-  namespace: shield
-data:
-  default.conf: |
-    server {
-        listen 80;
-        server_name shield.sentracam.net;
-        index index.html index.htm;
-        root /usr/share/nginx/html;
-        client_max_body_size 150M;
-        large_client_header_buffers 4 512k;
-        client_header_buffer_size 512k;
-
-        location / {
-          try_files $uri $uri/ /index.html;
-        }
-        # Additional proxy configurations can be handled in Ingress
-    }

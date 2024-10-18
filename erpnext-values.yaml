@@ -12,7 +12,7 @@
 
 image:
   repository: cjohnson282/sc-frappe
-  tag: v1.0.2
+  tag: v1.0.4
   #tag: v15.34.2
   pullPolicy: IfNotPresent
 

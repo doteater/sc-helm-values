@@ -1,0 +1,114 @@
+apiVersion: batch/v1
+kind: CronJob
+metadata:
+  name: erpnext-backup-cron-daily
+  namespace: erpnext
+spec:
+  schedule: "0 7 * * *" #7am utc = midnight az/mst
+  jobTemplate:
+    spec:
+      template:
+        spec:
+          containers:
+          - name: erpnext-backup-cron
+            image: cjohnson282/sc-frappe:v1.0.4
+            imagePullPolicy: IfNotPresent
+            #env:
+            #- name: PATH
+            #  value: /home/frappe/.nvm/versions/node/v18.18.2/bin:/usr/local/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin
+            command:
+            - /bin/sh
+            - -c
+            - |
+              echo "---Nightly Bench Backup In Progress---" && \
+              cd /home/frappe/frappe-bench && \
+              bench --site erp.sentracam.com backup --compress --backup-path erp.sentracam.com/private/backups-daily/ --verbose > /proc/1/fd/1 2>&1 && \
+              echo "---Pruning Daily Backup Files > 7 Days Old---" && \
+              find sites/erp.sentracam.com/private/backups-daily/ -type f -mtime +8 -exec echo "Removing file: {}" \; -exec rm -f {} \;
+            volumeMounts:
+              - mountPath: /home/frappe/frappe-bench/sites
+                name: sites-dir
+          imagePullSecrets:
+          - name: docker-hub-secret    
+          restartPolicy: OnFailure
+          volumes:
+            - name: sites-dir
+              persistentVolumeClaim:
+                claimName: frappe-bench-erpnext
+---
+apiVersion: batch/v1
+kind: CronJob
+metadata:
+  name: erpnext-backup-cron-weekly
+  namespace: erpnext
+spec:
+  schedule: "0 8 * * 0" #7am utc = midnight az/mst
+  jobTemplate:
+    spec:
+      template:
+        spec:
+          containers:
+          - name: erpnext-backup-cron
+            image: cjohnson282/sc-frappe:v1.0.4
+            imagePullPolicy: IfNotPresent
+            #env:
+            #- name: PATH
+            #  value: /home/frappe/.nvm/versions/node/v18.18.2/bin:/usr/local/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin
+            command:
+            - /bin/sh
+            - -c
+            - |
+              echo "---Weekly Bench Backup In Progress---" && \
+              cd /home/frappe/frappe-bench && \
+              bench --site erp.sentracam.com backup --compress --backup-path erp.sentracam.com/private/backups-weekly/ --verbose > /proc/1/fd/1 2>&1 && \
+              echo "---Pruning Weekly Backup Files > 30 Days Old---" && \
+              find sites/erp.sentracam.com/private/backups-weekly/ -type f -mtime +31 -exec echo "Removing file: {}" \; -exec rm -f {} \;
+            volumeMounts:
+              - mountPath: /home/frappe/frappe-bench/sites
+                name: sites-dir
+          imagePullSecrets:
+          - name: docker-hub-secret    
+          restartPolicy: OnFailure
+          volumes:
+            - name: sites-dir
+              persistentVolumeClaim:
+                claimName: frappe-bench-erpnext
+---
+apiVersion: batch/v1
+kind: CronJob
+metadata:
+  name: erpnext-backup-cron-monthly
+  namespace: erpnext
+spec:
+  schedule: "0 8 19 * *" #7am utc = midnight az/mst
+  jobTemplate:
+    spec:
+      template:
+        spec:
+          containers:
+          - name: erpnext-backup-cron
+            image: cjohnson282/sc-frappe:v1.0.4
+            imagePullPolicy: IfNotPresent
+            #env:
+            #- name: PATH
+            #  value: /home/frappe/.nvm/versions/node/v18.18.2/bin:/usr/local/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin
+            command:
+            - /bin/sh
+            - -c
+            - |
+              echo "---Monthly Bench Backup In Progress---" && \
+              cd /home/frappe/frappe-bench && \
+              bench --site erp.sentracam.com backup --compress --backup-path erp.sentracam.com/private/backups-monthly/ --verbose > /proc/1/fd/1 2>&1 && \
+              echo "---Pruning Monthly Backup Files > 120 Days Old---" && \
+              find sites/erp.sentracam.com/private/backups-monthly/ -type f -mtime +121 -exec echo "Removing file: {}" \; -exec rm -f {} \;
+            volumeMounts:
+              - mountPath: /home/frappe/frappe-bench/sites
+                name: sites-dir
+          imagePullSecrets:
+          - name: docker-hub-secret    
+          restartPolicy: OnFailure
+          volumes:
+            - name: sites-dir
+              persistentVolumeClaim:
+                claimName: frappe-bench-erpnext
+---
