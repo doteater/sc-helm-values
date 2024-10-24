@@ -1,0 +1,54 @@
+apiVersion: batch/v1
+kind: CronJob
+metadata:
+  name: evolon-report
+  namespace: evolon-report
+spec:
+  schedule: "1 21 * * *"  #6am az = 1pm utc
+  jobTemplate:
+    spec:
+      template:
+        spec:
+          containers:
+          - name: evolon-report
+            image: docker.io/cjohnson282/evolon-report:v1.0.3
+            env:
+            - name: EVOLON_EMAIL
+              valueFrom:
+                secretKeyRef:
+                  name: evolon-account
+                  key: username
+            - name: EVOLON_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: evolon-account
+                  key: password
+            - name: ZOHO_EMAIL
+              valueFrom:
+                secretKeyRef:
+                  name: zoho-account
+                  key: username
+            - name: ZOHO_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: zoho-account
+                  key: password
+            - name: RECIPIENTS_LIST
+              value: |
+                [
+                  "patrick.o'connell@sentracam.com",
+                  "carlos.marquez-lopez@sentracam.com",
+                  "cory.johnson@sentracam.com",
+                  "thomas.fant@sentracam.com",
+                  "mark.lopez@sentracam.com",
+                  "ryan.sugar@sentracam.com",
+                  "tyler.adkins@sentracam.com",
+                  "cristian.gonzalez@sentracam.com"
+                ]
+            volumeMounts:
+            - name: reports
+              mountPath: /app/reports
+          restartPolicy: OnFailure
+          volumes:
+          - name: reports
+            emptyDir: {}
